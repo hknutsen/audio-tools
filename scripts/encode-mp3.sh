@@ -50,7 +50,7 @@ function encode_mp3 {
 
   ffmpeg -loglevel error -hide_banner \
     -i "$flac_file" -codec:a libmp3lame -qscale:a 0 \
-    -codec:v mjpeg -filter:v scale=300:-1 "$mp3_file"
+    -codec:v copy "$mp3_file"
 
   realpath "$mp3_file"
 }
