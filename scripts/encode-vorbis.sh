@@ -61,10 +61,7 @@ function encode_vorbis {
   # type "Front cover".
   # Ref: https://www.rfc-editor.org/rfc/rfc9639.html#name-picture
   cover_art=$(metaflac --list --block-type=PICTURE --block-number=3 --data-format=binary-headerless "$flac_file" | base64 --wrap 0)
-  comments_file=$(mktemp)
-  echo "METADATA_BLOCK_PICTURE=$cover_art" > "$comments_file"
-  vorbiscomment -a "$ogg_file" -c "$comments_file"
-  rm "$comments_file"
+  echo "METADATA_BLOCK_PICTURE=$cover_art" | vorbiscomment --append "$ogg_file"
 }
 export -f encode_vorbis
 
