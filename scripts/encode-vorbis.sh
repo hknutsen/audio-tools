@@ -51,8 +51,20 @@ function encode_vorbis {
   # Most users agree quality 5 achieves transparency if the source is lossless.
   # Ref: https://wiki.hydrogenaudio.org/index.php?title=Recommended_Ogg_Vorbis
   oggenc -q 5 -o "$ogg_file" --quiet "$flac_file"
-
   realpath "$ogg_file"
+
+  # Cover art has to be manually exported from the FLAC file, base64 encoded,
+  # and embedded in the Ogg Vorbis file within a VorbisComment.
+  # Ref: https://wiki.xiph.org/index.php/VorbisComment#Cover_art
+  #
+  # Only picture block #3 needs to be exported, which corresponds to picture
+  # type "Front cover".
+  # Ref: https://www.rfc-editor.org/rfc/rfc9639.html#name-picture
+  cover_art=$(metaflac --list --block-type=PICTURE --block-number=3 --data-format=binary-headerless "$flac_file" | base64 --wrap 0)
+  comments_file=$(mktemp)
+  echo "METADATA_BLOCK_PICTURE=$cover_art" > "$comments_file"
+  vorbiscomment -a "$ogg_file" -c "$comments_file"
+  rm "$comments_file"
 }
 export -f encode_vorbis
 
