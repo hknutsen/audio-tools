@@ -60,7 +60,8 @@ function encode_vorbis {
   # Only picture block #3 needs to be exported, which corresponds to picture
   # type "Front cover".
   # Ref: https://www.rfc-editor.org/rfc/rfc9639.html#name-picture
-  picture=$(metaflac --list --block-type=PICTURE --block-number=3 --data-format=binary-headerless "$flac_file" | base64 --wrap 0)
+  picture=$(metaflac --list --block-type=PICTURE --block-number=3 \
+    --data-format=binary-headerless "$flac_file" | base64 --wrap 0)
   echo "METADATA_BLOCK_PICTURE=$picture" | vorbiscomment --append "$ogg_file"
 }
 export -f encode_vorbis
