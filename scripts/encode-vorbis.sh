@@ -48,9 +48,7 @@ function encode_vorbis {
     mkdir -p "$dir"
   fi
 
-  # Most users agree quality 5 achieves transparency if the source is lossless.
-  # Ref: https://wiki.hydrogenaudio.org/index.php?title=Recommended_Ogg_Vorbis
-  oggenc --quality 5 --output "$ogg_file" --quiet "$flac_file"
+  oggenc --quality 6 --resample 44100 --output "$ogg_file" --quiet "$flac_file"
   realpath "$ogg_file"
 
   # Cover art has to be manually exported from the FLAC file, base64 encoded,
