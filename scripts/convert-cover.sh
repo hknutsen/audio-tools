@@ -33,7 +33,7 @@ function resize_image() {
   fi
 
   # Ref: https://www.imagemagick.org/script/command-line-options.php#quality
-  magick "$input_file" -resize 500x500 -quality 90 "$output_file"
+  magick "$input_file" -resize 500x500 -quality 90 -strip "$output_file"
 
   realpath "$output_file"
 }
