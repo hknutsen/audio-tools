@@ -4,8 +4,9 @@
 # lossy Ogg Vorbis files in the Ogg directory.
 #
 # Prerequisites:
-#   parallel
+#   flac
 #   vorbis-tools
+#   parallel
 #
 # Globals:
 #   FLAC_DIR
