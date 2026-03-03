@@ -48,26 +48,25 @@ function encode_vorbis {
     mkdir -p "$dir"
   fi
 
-  oggenc -q 6 --resample 44100 --output "$ogg_file" --quiet "$flac_file"
+  oggenc -q 6 --resample 44100 -o "$ogg_file" --quiet "$flac_file"
   realpath "$ogg_file"
   
-  # Cover art has to be exported from the PICTURE blocks in the FLAC file, then
-  # base64 encoded and embedded in the Ogg Vorbis file in
-  # "METADATA_BLOCK_PICTURE" tags.
+  # Cover art has to be exported from the PICTURE blocks in the FLAC file and
+  # embedded in comment tags in the Ogg Vorbis file.
   # Ref: https://wiki.xiph.org/index.php/VorbisComment#Cover_art
-  number_of_blocks=$(metaflac --list "$flac_file" \
-    | grep -E -c "^METADATA block #[0-9]+$")
+  number_of_blocks=$(metaflac --list "$flac_file" | grep -c "METADATA block")
 
   # Block 0 is the mandatory STREAMINFO block and can be skipped.
   for (( n = 1; n < "$number_of_blocks"; n++ )) do
 
-    # If block n is a PICTURE block, return and base64 encode the binary data.
+    # If block n is a PICTURE block, the binary data will be returned and
+    # base64 encoded.
     picture=$(metaflac --list --block-number="$n" --block-type=PICTURE \
-      --data-format=binary-headerless "$flac_file" | base64 --wrap 0)
+      --data-format=binary-headerless "$flac_file" | base64 -w 0)
 
     if [[ -n "$picture" ]]; then
-      echo "METADATA_BLOCK_PICTURE=$picture" \
-        | vorbiscomment --append "$ogg_file"
+      # Store the base64 encoded binary data in a comment tag.
+      echo "METADATA_BLOCK_PICTURE=$picture" | vorbiscomment -a "$ogg_file"
     fi
   done
 }
