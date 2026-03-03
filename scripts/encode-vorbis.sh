@@ -51,22 +51,19 @@ function encode_vorbis {
 
   oggenc -q 6 --resample 44100 -o "$ogg_file" --quiet "$flac_file"
   realpath "$ogg_file"
-  
-  # Cover art has to be exported from the PICTURE blocks in the FLAC file and
-  # embedded in comment tags in the Ogg Vorbis file.
-  # Ref: https://wiki.xiph.org/index.php/VorbisComment#Cover_art
+
   number_of_blocks=$(metaflac --list "$flac_file" | grep -c "METADATA block")
-
-  # Block 0 is the mandatory STREAMINFO block and can be skipped.
+  # Block 0 is the mandatory STREAMINFO block and can be ignored.
   for (( n = 1; n < "$number_of_blocks"; n++ )) do
-
-    # If block n is a PICTURE block, the binary data will be returned and
-    # base64 encoded.
+    # If block n is a PICTURE block, dump and base64 encode the binary data.
     picture=$(metaflac --list --block-number="$n" --block-type=PICTURE \
       --data-format=binary-headerless "$flac_file" | base64 -w 0)
 
     if [[ -n "$picture" ]]; then
-      # Store the base64 encoded binary data in a comment tag.
+      # The base64 encoded binary data must be placed within a VorbisComment
+      # with the tag name "METADATA_BLOCK_PICTURE". This is the preferred and
+      # recommended way of embedding cover art within VorbisComments.
+      # Ref: https://wiki.xiph.org/index.php/VorbisComment#Cover_art
       echo "METADATA_BLOCK_PICTURE=$picture" | vorbiscomment -a "$ogg_file"
     fi
   done
