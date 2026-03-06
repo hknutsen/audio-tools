@@ -32,8 +32,15 @@ function resize_image() {
     exit 0
   fi
 
-  # Ref: https://www.imagemagick.org/script/command-line-options.php#quality
-  magick "$input_file" -resize 500x500 -quality 90 -strip "$output_file"
+  # Optimize image for fast loading.
+  # Ref: https://www.imagemagick.org/script/command-line-options.php
+  #
+  # The image processing algorithm used by the resize option assumes a linear
+  # colorspace. Explicitly convert to linear color (RGB) before resizing the
+  # image.
+  # Ref: https://imagemagick.org/script/color-management.php
+  magick "$input_file" -colorspace RGB -resize 500x500 -colorspace sRGB -strip \
+    -sampling-factor 4:2:0 -interlace plane -quality 90 "$output_file"
 
   realpath "$output_file"
 }
@@ -48,4 +55,4 @@ fi
 # Convert "cover.jpg" and "cover.png" files in parallel child processes.
 cd "$FLAC_DIR"
 find . -name 'cover.jpg' -o -name 'cover.png' \
-  | sort | parallel --progress 'resize_image {} {.}_500.jpg'
+  | sort | parallel --progress 'resize_image {} {.}-500.jpg'
