@@ -1,7 +1,7 @@
 #! /bin/bash
 
-# Converts all "cover.jpg" files in the source directory to "cover_500.jpg"
-# files for embedding.
+# Converts all "cover.jpg" files in the FLAC directory to "cover-500.jpg"
+# files that are optimized for embedding.
 #
 # Prereqs:
 #   parallel
@@ -15,9 +15,10 @@
 
 set -eu
 
-function resize_image() {
+function convert_image() {
   ##############################################################################
-  # Resize input image to 500x500 pixels.
+  # Convert input image file to an output image file that is optimized for
+  # embedding.
   # Arguments:
   #   Input file, a path.
   #   Output file, a path.
@@ -32,7 +33,7 @@ function resize_image() {
     exit 0
   fi
 
-  # Optimize image for fast loading.
+  # Optimize image for embedding.
   # Ref: https://www.imagemagick.org/script/command-line-options.php
   #
   # The image processing algorithm used by the resize option assumes a linear
@@ -44,7 +45,7 @@ function resize_image() {
 
   realpath "$output_file"
 }
-export -f resize_image
+export -f convert_image
 
 # Ensure the input directory exists.
 if [[ ! -d "$FLAC_DIR" ]]; then
@@ -55,4 +56,4 @@ fi
 # Convert "cover.jpg" and "cover.png" files in parallel child processes.
 cd "$FLAC_DIR"
 find . -name 'cover.jpg' -o -name 'cover.png' \
-  | sort | parallel --progress 'resize_image {} {.}-500.jpg'
+  | sort | parallel --progress 'convert_image {} {.}-500.jpg'
